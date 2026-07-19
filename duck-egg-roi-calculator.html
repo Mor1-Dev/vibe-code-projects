@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Duck Egg ROI Calculator</title>
+<style>
+  :root{
+    --pond-dark:#123A34;
+    --pond:#1B5A50;
+    --pond-light:#2E7A6C;
+    --duckling:#F2B705;
+    --duckling-deep:#D99400;
+    --cream:#FBF6EA;
+    --paper:#FFFFFF;
+    --brown:#7A5230;
+    --ink:#16241F;
+    --danger:#B23A2E;
+    --good:#1B7A4A;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Segoe UI',Roboto,-apple-system,BlinkMacSystemFont,sans-serif;
+    line-height:1.4;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px 60px;}
+
+  header.hero{
+    background:linear-gradient(135deg,var(--pond-dark),var(--pond));
+    color:var(--cream);
+    padding:36px 20px 90px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.hero .inner{max-width:960px;margin:0 auto;position:relative;z-index:2;}
+  header.hero .eyebrow{
+    font-size:12px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--duckling);font-weight:700;margin-bottom:8px;
+  }
+  header.hero h1{
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:clamp(28px,5vw,42px);
+    margin:0 0 10px;
+    font-weight:700;
+  }
+  header.hero p{max-width:520px;color:#DCEFEA;font-size:15px;margin:0;}
+  .ripple{
+    position:absolute;right:-60px;bottom:-80px;width:280px;height:280px;
+    border-radius:50%;border:2px solid rgba(242,183,5,0.25);
+  }
+  .ripple:nth-child(2){right:-20px;bottom:-40px;width:180px;height:180px;border-color:rgba(242,183,5,0.4);}
+
+  .card{
+    background:var(--paper);
+    border-radius:var(--radius);
+    box-shadow:0 10px 30px rgba(18,58,52,0.12);
+    padding:26px;
+    margin-top:-56px;
+    position:relative;
+    z-index:3;
+  }
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 24px;}
+  @media(max-width:640px){.grid{grid-template-columns:1fr;}}
+
+  .field label{
+    display:block;font-size:13px;font-weight:700;color:var(--brown);
+    margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;
+  }
+  .field .hint{font-size:12px;color:#7d7d72;font-weight:400;text-transform:none;letter-spacing:0;display:block;margin-top:3px;}
+  .field input{
+    width:100%;padding:11px 12px;font-size:16px;
+    border:1.5px solid #DCD5C2;border-radius:10px;
+    background:#FCFAF3;color:var(--ink);
+    transition:border-color .15s;
+  }
+  .field input:focus{outline:none;border-color:var(--pond-light);}
+  .prefix-field{position:relative;}
+  .prefix-field span.prefix{
+    position:absolute;left:12px;top:37px;color:#8a8a7c;font-size:15px;pointer-events:none;
+  }
+  .prefix-field input{padding-left:28px;}
+
+  .section-title{
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:20px;margin:34px 0 14px;color:var(--pond-dark);
+    display:flex;align-items:center;gap:10px;
+  }
+  .section-title .num{
+    background:var(--duckling);color:var(--pond-dark);
+    width:26px;height:26px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;font-family:Segoe UI,sans-serif;
+  }
+
+  .results{
+    background:var(--pond-dark);
+    color:var(--cream);
+    border-radius:var(--radius);
+    padding:24px;
+    margin-top:24px;
+  }
+  .results h2{
+    font-family:Georgia,serif;font-size:19px;margin:0 0 18px;color:var(--duckling);
+  }
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
+  @media(max-width:640px){.stat-row{grid-template-columns:1fr;}}
+  .stat{
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(242,183,5,0.18);
+    border-radius:10px;padding:14px 16px;
+  }
+  .stat .label{font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#9FC9BF;margin-bottom:6px;}
+  .stat .value{font-size:22px;font-weight:700;color:var(--cream);}
+  .stat .value.pos{color:#8FE3B0;}
+  .stat .value.neg{color:#F4A69C;}
+
+  .headline-stat{
+    display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+    border-top:1px solid rgba(255,255,255,0.15);
+    padding-top:18px;margin-top:6px;
+  }
+  .headline-stat .big{font-size:38px;font-weight:800;color:var(--duckling);}
+  .headline-stat .desc{color:#DCEFEA;font-size:14px;max-width:420px;}
+
+  .note{
+    font-size:12.5px;color:#6f6a58;background:#F3EEDD;border-radius:10px;
+    padding:12px 14px;margin-top:16px;border-left:3px solid var(--duckling-deep);
+  }
+
+  footer{text-align:center;color:#8a8a7c;font-size:12px;margin-top:30px;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="ripple"></div><div class="ripple"></div>
+  <div class="inner">
+    <div class="eyebrow">Backyard &amp; Commercial Duck Farming</div>
+    <h1>Duck Egg ROI Calculator</h1>
+    <p>Enter your flock size, egg output, and costs to see daily, monthly, and yearly profit — plus how long it takes to earn back your starting investment.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+
+    <div class="section-title"><span class="num">1</span> Your Flock</div>
+    <div class="grid">
+      <div class="field">
+        <label for="headcount">Number of ducks</label>
+        <input type="number" id="headcount" value="50" min="0" step="1">
+      </div>
+      <div class="field">
+        <label for="layRate">Laying rate <span class="hint">% of ducks laying an egg per day</span></label>
+        <input type="number" id="layRate" value="80" min="0" max="100" step="1">
+      </div>
+    </div>
+
+    <div class="section-title"><span class="num">2</span> Income</div>
+    <div class="grid">
+      <div class="field prefix-field">
+        <label for="eggPrice">Price per egg</label>
+        <span class="prefix">₱</span>
+        <input type="number" id="eggPrice" value="8" min="0" step="0.1">
+      </div>
+      <div class="field">
+        <label for="otherIncome">Other daily income <span class="hint">e.g. selling ducklings, manure — optional</span></label>
+        <span class="prefix" style="top:37px;">₱</span>
+        <input type="number" id="otherIncome" value="0" min="0" step="1" style="padding-left:12px;">
+      </div>
+    </div>
+
+    <div class="section-title"><span class="num">3</span> Costs</div>
+    <div class="grid">
+      <div class="field prefix-field">
+        <label for="feedCost">Feed cost <span class="hint">per duck, per day</span></label>
+        <span class="prefix">₱</span>
+        <input type="number" id="feedCost" value="12" min="0" step="0.1">
+      </div>
+      <div class="field prefix-field">
+        <label for="otherMonthly">Other monthly costs <span class="hint">labor, medicine, electricity, water</span></label>
+        <span class="prefix">₱</span>
+        <input type="number" id="otherMonthly" value="1500" min="0" step="50">
+      </div>
+      <div class="field prefix-field">
+        <label for="initialInvestment">Starting investment <span class="hint">ducklings, pen/housing, equipment</span></label>
+        <span class="prefix">₱</span>
+        <input type="number" id="initialInvestment" value="25000" min="0" step="500">
+      </div>
+      <div class="field">
+        <label for="mortality">Expected mortality <span class="hint">% flock loss per year, lowers effective head count</span></label>
+        <input type="number" id="mortality" value="5" min="0" max="100" step="1">
+      </div>
+    </div>
+
+    <div class="results" id="results">
+      <h2>Your Projected Returns</h2>
+
+      <div class="stat-row">
+        <div class="stat">
+          <div class="label">Eggs per day</div>
+          <div class="value" id="eggsPerDay">–</div>
+        </div>
+        <div class="stat">
+          <div class="label">Daily revenue</div>
+          <div class="value" id="dailyRevenue">–</div>
+        </div>
+        <div class="stat">
+          <div class="label">Daily cost</div>
+          <div class="value" id="dailyCost">–</div>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat">
+          <div class="label">Monthly profit</div>
+          <div class="value" id="monthlyProfit">–</div>
+        </div>
+        <div class="stat">
+          <div class="label">Annual profit</div>
+          <div class="value" id="annualProfit">–</div>
+        </div>
+        <div class="stat">
+          <div class="label">Payback period</div>
+          <div class="value" id="payback">–</div>
+        </div>
+      </div>
+
+      <div class="headline-stat">
+        <div class="big" id="roiBig">–</div>
+        <div class="desc">Annual ROI — annual profit as a percentage of your starting investment. Higher means your capital is earning back faster.</div>
+      </div>
+    </div>
+
+    <div class="note">
+      Assumes laying rate and feed cost stay constant year-round. Mortality is applied as an average reduction to head count when estimating annual totals. Adjust any figure above — everything recalculates instantly.
+    </div>
+  </div>
+
+  <footer>Built for planning purposes only — actual results vary with breed, season, and local feed &amp; egg prices.</footer>
+</div>
+
+<script>
+function num(id){ const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; }
+function peso(v){ return '₱' + v.toLocaleString(undefined,{maximumFractionDigits:0}); }
+
+function calc(){
+  const headcount = num('headcount');
+  const layRate = num('layRate') / 100;
+  const eggPrice = num('eggPrice');
+  const otherIncome = num('otherIncome');
+  const feedCost = num('feedCost');
+  const otherMonthly = num('otherMonthly');
+  const initialInvestment = num('initialInvestment');
+  const mortality = num('mortality') / 100;
+
+  const effectiveHeadcount = headcount * (1 - mortality/2); // average over the year
+  const eggsPerDay = effectiveHeadcount * layRate;
+  const dailyRevenue = eggsPerDay * eggPrice + otherIncome;
+  const dailyFeedCost = effectiveHeadcount * feedCost;
+  const dailyOtherCost = otherMonthly / 30;
+  const dailyCost = dailyFeedCost + dailyOtherCost;
+  const dailyProfit = dailyRevenue - dailyCost;
+  const monthlyProfit = dailyProfit * 30;
+  const annualProfit = dailyProfit * 365;
+
+  document.getElementById('eggsPerDay').textContent = eggsPerDay.toLocaleString(undefined,{maximumFractionDigits:1});
+  document.getElementById('dailyRevenue').textContent = peso(dailyRevenue);
+  document.getElementById('dailyCost').textContent = peso(dailyCost);
+
+  const monthlyEl = document.getElementById('monthlyProfit');
+  monthlyEl.textContent = peso(monthlyProfit);
+  monthlyEl.className = 'value ' + (monthlyProfit >= 0 ? 'pos' : 'neg');
+
+  const annualEl = document.getElementById('annualProfit');
+  annualEl.textContent = peso(annualProfit);
+  annualEl.className = 'value ' + (annualProfit >= 0 ? 'pos' : 'neg');
+
+  const paybackEl = document.getElementById('payback');
+  if(monthlyProfit > 0 && initialInvestment > 0){
+    const months = initialInvestment / monthlyProfit;
+    paybackEl.textContent = months < 1 ? '< 1 month' : months.toFixed(1) + ' months';
+    paybackEl.className = 'value pos';
+  } else if (initialInvestment === 0) {
+    paybackEl.textContent = 'No investment set';
+    paybackEl.className = 'value';
+  } else {
+    paybackEl.textContent = 'Not recovering';
+    paybackEl.className = 'value neg';
+  }
+
+  const roiBig = document.getElementById('roiBig');
+  if(initialInvestment > 0){
+    const roi = (annualProfit / initialInvestment) * 100;
+    roiBig.textContent = roi.toFixed(1) + '% ROI';
+    roiBig.style.color = roi >= 0 ? '#F2B705' : '#F4A69C';
+  } else {
+    roiBig.textContent = '—';
+  }
+}
+
+document.querySelectorAll('input').forEach(el => el.addEventListener('input', calc));
+calc();
+</script>
+</body>
+</html>

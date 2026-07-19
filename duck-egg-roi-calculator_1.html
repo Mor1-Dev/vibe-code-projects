@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Duck Egg ROI Tracker</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#123A34">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Duck ROI">
+<style>
+  :root{
+    --pond-dark:#123A34; --pond:#1B5A50; --pond-light:#2E7A6C;
+    --duckling:#F2B705; --duckling-deep:#D99400;
+    --cream:#FBF6EA; --paper:#FFFFFF; --brown:#7A5230; --ink:#16241F;
+    --danger:#B23A2E; --good:#1B7A4A; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--cream);color:var(--ink);font-family:'Segoe UI',Roboto,-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.4;}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px 60px;}
+
+  header.hero{background:linear-gradient(135deg,var(--pond-dark),var(--pond));color:var(--cream);padding:32px 20px 80px;position:relative;overflow:hidden;}
+  header.hero .inner{max-width:960px;margin:0 auto;position:relative;z-index:2;}
+  header.hero .eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--duckling);font-weight:700;margin-bottom:8px;}
+  header.hero h1{font-family:Georgia,'Times New Roman',serif;font-size:clamp(26px,5vw,38px);margin:0 0 8px;font-weight:700;}
+  header.hero p{max-width:560px;color:#DCEFEA;font-size:14.5px;margin:0;}
+  .ripple{position:absolute;right:-60px;bottom:-80px;width:260px;height:260px;border-radius:50%;border:2px solid rgba(242,183,5,0.25);}
+  .ripple:nth-child(2){right:-20px;bottom:-40px;width:170px;height:170px;border-color:rgba(242,183,5,0.4);}
+
+  .card{background:var(--paper);border-radius:var(--radius);box-shadow:0 10px 30px rgba(18,58,52,0.12);padding:24px;position:relative;z-index:3;}
+  .card + .card{margin-top:20px;}
+  .card.pull-up{margin-top:-50px;}
+
+  .card-title{font-family:Georgia,'Times New Roman',serif;font-size:19px;margin:0 0 4px;color:var(--pond-dark);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .card-sub{font-size:13px;color:#7d7d72;margin:0 0 16px;}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;}
+  .grid.cols-5{grid-template-columns:1.1fr 1fr 1fr 1fr 1fr;}
+  @media(max-width:760px){.grid.cols-5{grid-template-columns:1fr 1fr;}}
+  @media(max-width:640px){.grid{grid-template-columns:1fr;}}
+
+  .field label{display:block;font-size:12.5px;font-weight:700;color:var(--brown);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;}
+  .field .hint{font-size:11.5px;color:#7d7d72;font-weight:400;text-transform:none;letter-spacing:0;display:block;margin-top:3px;}
+  .field input{width:100%;padding:10px 11px;font-size:15px;border:1.5px solid #DCD5C2;border-radius:10px;background:#FCFAF3;color:var(--ink);}
+  .field input:focus{outline:none;border-color:var(--pond-light);}
+  .prefix-field{position:relative;}
+  .prefix-field span.prefix{position:absolute;left:11px;top:36px;color:#8a8a7c;font-size:14px;pointer-events:none;}
+  .prefix-field input{padding-left:26px;}
+
+  .btn{border:none;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:transform .1s, opacity .15s;}
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{background:var(--duckling);color:var(--pond-dark);}
+  .btn-primary:hover{background:var(--duckling-deep);}
+  .btn-ghost{background:transparent;color:var(--pond-dark);border:1.5px solid #DCD5C2;}
+  .btn-ghost:hover{border-color:var(--pond-light);}
+  .btn-danger-text{background:none;border:none;color:var(--danger);font-size:12.5px;font-weight:700;cursor:pointer;padding:4px 8px;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+
+  table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13.5px;}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--brown);padding:8px 10px;border-bottom:2px solid #EDE7D6;}
+  td{padding:9px 10px;border-bottom:1px solid #F1EDE0;color:var(--ink);}
+  tr:hover td{background:#FCFAF3;}
+  .num-cell{text-align:right;font-variant-numeric:tabular-nums;}
+  .empty-row td{text-align:center;color:#a19c8c;padding:26px 10px;font-style:italic;}
+  .table-scroll{overflow-x:auto;}
+
+  .results{background:var(--pond-dark);color:var(--cream);border-radius:var(--radius);padding:24px;margin-top:20px;}
+  .results h2{font-family:Georgia,serif;font-size:19px;margin:0 0 4px;color:var(--duckling);}
+  .results .sub{font-size:12.5px;color:#9FC9BF;margin:0 0 18px;}
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
+  @media(max-width:640px){.stat-row{grid-template-columns:1fr 1fr;}}
+  .stat{background:rgba(255,255,255,0.06);border:1px solid rgba(242,183,5,0.18);border-radius:10px;padding:13px 15px;}
+  .stat .label{font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;color:#9FC9BF;margin-bottom:6px;}
+  .stat .value{font-size:20px;font-weight:700;color:var(--cream);}
+  .stat .value.pos{color:#8FE3B0;}
+  .stat .value.neg{color:#F4A69C;}
+
+  .progress-wrap{margin-top:18px;border-top:1px solid rgba(255,255,255,0.15);padding-top:18px;}
+  .progress-label{display:flex;justify-content:space-between;font-size:13px;color:#DCEFEA;margin-bottom:8px;}
+  .progress-bar{height:12px;border-radius:8px;background:rgba(255,255,255,0.12);overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--duckling-deep),var(--duckling));border-radius:8px;transition:width .3s;}
+
+  .note{font-size:12.5px;color:#6f6a58;background:#F3EEDD;border-radius:10px;padding:12px 14px;margin-top:16px;border-left:3px solid var(--duckling-deep);}
+  .save-pill{font-size:11.5px;color:var(--good);font-weight:700;display:inline-flex;align-items:center;gap:5px;opacity:0;transition:opacity .3s;}
+  .save-pill.show{opacity:1;}
+
+  footer{text-align:center;color:#8a8a7c;font-size:12px;margin-top:30px;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="ripple"></div><div class="ripple"></div>
+  <div class="inner">
+    <div class="eyebrow">Backyard &amp; Commercial Duck Farming</div>
+    <h1>Duck Egg ROI Tracker</h1>
+    <p>Log each Monday &amp; Thursday delivery — price, production, and totals change every time. Everything's saved on this device automatically.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="card pull-up">
+    <div class="card-title">Flock &amp; Cost Assumptions <span class="save-pill" id="settingsSaved">✓ Saved</span></div>
+    <p class="card-sub">These stay fairly constant — update only when they actually change.</p>
+    <div class="grid">
+      <div class="field">
+        <label for="headcount">Number of ducks</label>
+        <input type="number" id="headcount" min="0" step="1">
+      </div>
+      <div class="field prefix-field">
+        <label for="feedCost">Feed cost <span class="hint">per duck, per day</span></label>
+        <span class="prefix">₱</span>
+        <input type="number" id="feedCost" min="0" step="0.1">
+      </div>
+      <div class="field prefix-field">
+        <label for="otherMonthly">Other monthly costs <span class="hint">labor, medicine, electricity, water</span></label>
+        <span class="prefix">₱</span>
+        <input type="number" id="otherMonthly" min="0" step="50">
+      </div>
+      <div class="field prefix-field">
+        <label for="initialInvestment">Starting investment <span class="hint">ducklings, pen/housing, equipment</span></label>
+        <span class="prefix">₱</span>
+        <input type="number" id="initialInvestment" min="0" step="500">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Delivery Log</div>
+    <p class="card-sub">Add one entry per delivery day (Mon &amp; Thu). Total price auto-fills from price × eggs, but you can overwrite it with your own figure.</p>
+
+    <div class="grid cols-5">
+      <div class="field">
+        <label for="entryDate">Delivery date</label>
+        <input type="date" id="entryDate">
+      </div>
+      <div class="field prefix-field">
+        <label for="entryPrice">Price per egg</label>
+        <span class="prefix">₱</span>
+        <input type="number" id="entryPrice" min="0" step="0.1">
+      </div>
+      <div class="field">
+        <label for="entryProduction">Daily production <span class="hint">eggs/day avg</span></label>
+        <input type="number" id="entryProduction" min="0" step="1">
+      </div>
+      <div class="field">
+        <label for="entryTotalEggs">Total eggs</label>
+        <input type="number" id="entryTotalEggs" min="0" step="1">
+      </div>
+      <div class="field prefix-field">
+        <label for="entryTotalPrice">Total price</label>
+        <span class="prefix">₱</span>
+        <input type="number" id="entryTotalPrice" min="0" step="1">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="addEntryBtn">Add entry</button>
+      <button class="btn btn-ghost" id="cancelEditBtn" style="display:none;">Cancel edit</button>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th class="num-cell">Price/egg</th>
+            <th class="num-cell">Daily prod.</th>
+            <th class="num-cell">Total eggs</th>
+            <th class="num-cell">Total price</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="entryTableBody">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="exportBtn">Export backup (.json)</button>
+      <button class="btn btn-ghost" id="importBtn">Import backup</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+      <button class="btn btn-ghost" id="clearBtn" style="color:var(--danger);border-color:#E8C9C4;">Clear all data</button>
+    </div>
+  </div>
+
+  <div class="results">
+    <h2>Your Results So Far</h2>
+    <p class="sub" id="periodLabel">No entries logged yet</p>
+
+    <div class="stat-row">
+      <div class="stat"><div class="label">Total eggs delivered</div><div class="value" id="sTotalEggs">–</div></div>
+      <div class="stat"><div class="label">Avg. price / egg</div><div class="value" id="sAvgPrice">–</div></div>
+      <div class="stat"><div class="label">Total revenue</div><div class="value" id="sRevenue">–</div></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="label">Est. total costs</div><div class="value" id="sCosts">–</div></div>
+      <div class="stat"><div class="label">Net profit to date</div><div class="value" id="sProfit">–</div></div>
+      <div class="stat"><div class="label">Projected annual ROI</div><div class="value" id="sRoi">–</div></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Investment recovered</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    Costs are estimated daily (feed × ducks + other monthly costs ÷ 30) across the days between your first log entry and today, since ducks eat every day even though eggs are only sold Mon/Thu. Revenue comes straight from what you log. Everything is stored locally in this browser/device — it won't sync across phones or clear your cache without warning, so use "Export backup" now and then to keep a copy.
+  </div>
+
+  <footer>Built for planning purposes only — actual results vary with breed, season, and local feed &amp; egg prices.</footer>
+</div>
+
+<script>
+const SETTINGS_KEY = 'duckroi_settings_v1';
+const ENTRIES_KEY = 'duckroi_entries_v1';
+
+const defaultSettings = { headcount: 50, feedCost: 12, otherMonthly: 1500, initialInvestment: 25000 };
+
+let settings = loadJSON(SETTINGS_KEY, defaultSettings);
+let entries = loadJSON(ENTRIES_KEY, []);
+let editingId = null;
+
+function loadJSON(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  }catch(e){ return fallback; }
+}
+function saveJSON(key, data){
+  try{ localStorage.setItem(key, JSON.stringify(data)); return true; }catch(e){ return false; }
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function peso(v){ return '₱' + Number(v||0).toLocaleString(undefined,{maximumFractionDigits:2}); }
+function num(id){ const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; }
+
+// ---- Settings ----
+function populateSettingsForm(){
+  document.getElementById('headcount').value = settings.headcount;
+  document.getElementById('feedCost').value = settings.feedCost;
+  document.getElementById('otherMonthly').value = settings.otherMonthly;
+  document.getElementById('initialInvestment').value = settings.initialInvestment;
+}
+function persistSettings(){
+  settings = {
+    headcount: num('headcount'),
+    feedCost: num('feedCost'),
+    otherMonthly: num('otherMonthly'),
+    initialInvestment: num('initialInvestment')
+  };
+  saveJSON(SETTINGS_KEY, settings);
+  flashSaved();
+  recalc();
+}
+let saveFlashTimer;
+function flashSaved(){
+  const el = document.getElementById('settingsSaved');
+  el.classList.add('show');
+  clearTimeout(saveFlashTimer);
+  saveFlashTimer = setTimeout(()=> el.classList.remove('show'), 1200);
+}
+['headcount','feedCost','otherMonthly','initialInvestment'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', persistSettings);
+});
+
+// ---- Entries ----
+function persistEntries(){ saveJSON(ENTRIES_KEY, entries); }
+
+function resetEntryForm(){
+  document.getElementById('entryDate').value = '';
+  document.getElementById('entryPrice').value = '';
+  document.getElementById('entryProduction').value = '';
+  document.getElementById('entryTotalEggs').value = '';
+  document.getElementById('entryTotalPrice').value = '';
+  editingId = null;
+  document.getElementById('addEntryBtn').textContent = 'Add entry';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+}
+
+document.getElementById('entryPrice').addEventListener('input', autofillTotal);
+document.getElementById('entryTotalEggs').addEventListener('input', autofillTotal);
+function autofillTotal(){
+  const price = num('entryPrice'), eggs = num('entryTotalEggs');
+  if(price > 0 && eggs > 0){
+    document.getElementById('entryTotalPrice').value = (price*eggs).toFixed(2);
+  }
+}
+
+document.getElementById('addEntryBtn').addEventListener('click', () => {
+  const date = document.getElementById('entryDate').value;
+  if(!date){ alert('Please pick a delivery date.'); return; }
+  const entry = {
+    id: editingId || uid(),
+    date,
+    price: num('entryPrice'),
+    production: num('entryProduction'),
+    totalEggs: num('entryTotalEggs'),
+    totalPrice: num('entryTotalPrice')
+  };
+  if(editingId){
+    const idx = entries.findIndex(e => e.id === editingId);
+    if(idx > -1) entries[idx] = entry;
+  } else {
+    entries.push(entry);
+  }
+  entries.sort((a,b) => a.date.localeCompare(b.date));
+  persistEntries();
+  resetEntryForm();
+  renderEntries();
+  recalc();
+});
+
+document.getElementById('cancelEditBtn').addEventListener('click', resetEntryForm);
+
+function editEntry(id){
+  const e = entries.find(x => x.id === id);
+  if(!e) return;
+  editingId = id;
+  document.getElementById('entryDate').value = e.date;
+  document.getElementById('entryPrice').value = e.price;
+  document.getElementById('entryProduction').value = e.production;
+  document.getElementById('entryTotalEggs').value = e.totalEggs;
+  document.getElementById('entryTotalPrice').value = e.totalPrice;
+  document.getElementById('addEntryBtn').textContent = 'Update entry';
+  document.getElementById('cancelEditBtn').style.display = 'inline-block';
+  window.scrollTo({top: document.querySelector('.card:nth-of-type(2)').offsetTop - 20, behavior:'smooth'});
+}
+
+function deleteEntry(id){
+  if(!confirm('Delete this log entry?')) return;
+  entries = entries.filter(e => e.id !== id);
+  persistEntries();
+  renderEntries();
+  recalc();
+}
+
+function renderEntries(){
+  const tbody = document.getElementById('entryTableBody');
+  tbody.innerHTML = '';
+  if(entries.length === 0){
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No deliveries logged yet — add your first Monday or Thursday entry above.</td></tr>';
+    return;
+  }
+  entries.forEach(e => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${formatDate(e.date)}</td>
+      <td class="num-cell">${peso(e.price)}</td>
+      <td class="num-cell">${Number(e.production||0).toLocaleString()}</td>
+      <td class="num-cell">${Number(e.totalEggs||0).toLocaleString()}</td>
+      <td class="num-cell">${peso(e.totalPrice)}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn-danger-text" style="color:var(--pond-light);" onclick="editEntry('${e.id}')">Edit</button>
+        <button class="btn-danger-text" onclick="deleteEntry('${e.id}')">Delete</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+function formatDate(iso){
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric', weekday:'short'});
+}
+
+// ---- Summary ----
+function recalc(){
+  const totalEggs = entries.reduce((s,e)=> s + (e.totalEggs||0), 0);
+  const totalRevenue = entries.reduce((s,e)=> s + (e.totalPrice||0), 0);
+  const avgPrice = totalEggs > 0 ? totalRevenue / totalEggs : 0;
+
+  document.getElementById('sTotalEggs').textContent = totalEggs.toLocaleString();
+  document.getElementById('sAvgPrice').textContent = entries.length ? peso(avgPrice) : '–';
+  document.getElementById('sRevenue').textContent = peso(totalRevenue);
+
+  if(entries.length === 0){
+    document.getElementById('periodLabel').textContent = 'No entries logged yet';
+    document.getElementById('sCosts').textContent = '–';
+    document.getElementById('sProfit').textContent = '–';
+    document.getElementById('sRoi').textContent = '–';
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('progressPct').textContent = '0%';
+    return;
+  }
+
+  const firstDate = new Date(entries[0].date + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysTracked = Math.max(1, Math.round((today - firstDate)/86400000) + 1);
+
+  const totalCosts = (settings.feedCost * settings.headcount * daysTracked) + (settings.otherMonthly/30 * daysTracked);
+  const netProfit = totalRevenue - totalCosts;
+  const monthlyRunRate = netProfit / daysTracked * 30;
+  const annualRunRate = netProfit / daysTracked * 365;
+
+  document.getElementById('periodLabel').textContent =
+    `Tracking ${daysTracked} day${daysTracked===1?'':'s'} — since ${formatDate(entries[0].date)}`;
+
+  document.getElementById('sCosts').textContent = peso(totalCosts);
+
+  const profitEl = document.getElementById('sProfit');
+  profitEl.textContent = peso(netProfit);
+  profitEl.className = 'value ' + (netProfit >= 0 ? 'pos' : 'neg');
+
+  const roiEl = document.getElementById('sRoi');
+  if(settings.initialInvestment > 0){
+    const roi = (annualRunRate / settings.initialInvestment) * 100;
+    roiEl.textContent = roi.toFixed(1) + '%';
+    roiEl.className = 'value ' + (roi >= 0 ? 'pos' : 'neg');
+  } else {
+    roiEl.textContent = '–';
+  }
+
+  const pct = settings.initialInvestment > 0 ? Math.max(0, Math.min(100, (netProfit/settings.initialInvestment)*100)) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct.toFixed(1) + '%';
+}
+
+// ---- Backup / restore ----
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const payload = { settings, entries, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'duck-roi-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', (ev) => {
+  const file = ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const payload = JSON.parse(reader.result);
+      if(payload.settings) settings = payload.settings;
+      if(payload.entries) entries = payload.entries;
+      saveJSON(SETTINGS_KEY, settings);
+      saveJSON(ENTRIES_KEY, entries);
+      populateSettingsForm();
+      renderEntries();
+      recalc();
+      alert('Backup imported successfully.');
+    }catch(e){
+      alert('Could not read that file — make sure it\'s a backup exported from this app.');
+    }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  if(!confirm('This deletes all logged entries and resets your settings on this device. Export a backup first if you want to keep it. Continue?')) return;
+  localStorage.removeItem(SETTINGS_KEY);
+  localStorage.removeItem(ENTRIES_KEY);
+  settings = {...defaultSettings};
+  entries = [];
+  populateSettingsForm();
+  renderEntries();
+  recalc();
+});
+
+// ---- Init ----
+populateSettingsForm();
+renderEntries();
+recalc();
+
+// default the date field to the nearest upcoming Mon/Thu
+(function suggestNextDeliveryDate(){
+  const d = new Date();
+  const day = d.getDay(); // 0 Sun ... 1 Mon ... 4 Thu
+  let diff;
+  if(day <= 1) diff = 1 - day;
+  else if(day <= 4) diff = 4 - day;
+  else diff = 8 - day;
+  d.setDate(d.getDate() + diff);
+  document.getElementById('entryDate').value = d.toISOString().slice(0,10);
+})();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

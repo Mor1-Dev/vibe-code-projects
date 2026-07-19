@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For My Favorite Person</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFF6E9;
+    --paper2:#FFEFDA;
+    --panel:#FFFDF8;
+    --ink:#2B2620;
+    --cherry:#E1553A;
+    --sky:#8FCFE0;
+    --sun:#F6B93B;
+    --blush:#F5A9BC;
+    --moss:#7FA37A;
+    --line: 2.5px;
+  }
+
+  *{box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle, rgba(43,38,32,0.07) 1px, transparent 1px) 0 0/18px 18px,
+      linear-gradient(180deg, var(--paper) 0%, var(--paper2) 100%);
+    color:var(--ink);
+    font-family:'Quicksand', sans-serif;
+    overflow-x:hidden;
+  }
+
+  h1,h2,.hand{ font-family:'Kalam', cursive; }
+  .serif{ font-family:'Fraunces', serif; font-style:italic; }
+
+  a{color:inherit;}
+  button{font-family:inherit; cursor:pointer;}
+
+  ::selection{ background:var(--sun); color:var(--ink); }
+
+  /* ---------- floating hearts ---------- */
+  .floaters{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .floaters span{ position:absolute; bottom:-40px; opacity:0.45; animation:rise linear infinite; }
+  @keyframes rise{ to{ transform:translateY(-112vh) rotate(20deg); opacity:0; } }
+
+  /* ---------- customize toggle ---------- */
+  .customize-btn{
+    position:fixed;
+    top:20px;
+    right:20px;
+    z-index:20;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    border-radius:999px;
+    padding:10px 18px;
+    font-size:0.85rem;
+    font-weight:600;
+    letter-spacing:0.02em;
+    box-shadow:0 4px 14px rgba(43,38,32,0.25);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition:transform .2s ease;
+  }
+  .customize-btn:hover{ transform:translateY(-2px); }
+
+  .editor{
+    position:fixed;
+    inset:0;
+    background:rgba(43,38,32,0.55);
+    backdrop-filter:blur(3px);
+    z-index:30;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .editor.open{ display:flex; }
+  .editor-card{
+    background:var(--panel);
+    border:var(--line) solid var(--ink);
+    border-radius:18px;
+    max-width:460px;
+    width:100%;
+    padding:30px;
+    box-shadow:8px 8px 0 var(--cherry);
+    max-height:86vh;
+    overflow-y:auto;
+  }
+  .editor-card h3{ margin:0 0 4px; font-family:'Kalam',cursive; font-size:1.4rem;}
+  .editor-card .hint{ font-size:0.85rem; opacity:0.65; margin:0 0 20px; }
+  .editor-card label{
+    display:block;
+    font-size:0.8rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    opacity:0.6;
+    margin:16px 0 6px;
+  }
+  .editor-card textarea, .editor-card input[type=text]{
+    width:100%;
+    font-family:'Quicksand', sans-serif;
+    font-size:0.95rem;
+    padding:10px 12px;
+    border:2px solid var(--ink);
+    border-radius:10px;
+    background:var(--paper);
+    resize:vertical;
+  }
+  .editor-card textarea{ min-height:70px; }
+  .file-btn{
+    display:inline-block;
+    background:var(--sky);
+    border:2px solid var(--ink);
+    border-radius:999px;
+    padding:8px 16px;
+    font-size:0.85rem;
+    font-weight:600;
+  }
+  .editor-actions{
+    display:flex;
+    gap:10px;
+    margin-top:26px;
+  }
+  .editor-actions button{
+    flex:1;
+    border:var(--line) solid var(--ink);
+    border-radius:999px;
+    padding:12px;
+    font-weight:700;
+    font-size:0.9rem;
+  }
+  .btn-save{ background:var(--cherry); color:#fff; }
+  .btn-close{ background:var(--panel); }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:6vh 6vw 8vh;
+    z-index:1;
+  }
+
+  .eyebrow{
+    background:var(--sun);
+    border:var(--line) solid var(--ink);
+    border-radius:999px;
+    padding:6px 22px;
+    font-size:0.95rem;
+    transform:rotate(-3deg);
+    display:inline-block;
+    margin-bottom:30px;
+    box-shadow:4px 4px 0 var(--ink);
+  }
+
+  .hero h1{
+    font-size:clamp(2.6rem, 7.5vw, 4.9rem);
+    line-height:1.08;
+    margin:0 0 18px;
+    max-width:17ch;
+    letter-spacing:-0.01em;
+  }
+
+  .hero h1 .cherry{ color:var(--cherry); }
+
+  .hero p.sub{
+    font-size:1.15rem;
+    max-width:46ch;
+    margin:0 0 46px;
+    opacity:0.8;
+  }
+
+  /* the doodle dog */
+  .dog-wrap{ position:relative; width:230px; height:230px; margin-bottom:10px; filter:drop-shadow(0 10px 14px rgba(43,38,32,0.15)); }
+  .dog-wrap svg{ width:100%; height:100%; overflow:visible; }
+  .tail{ transform-origin: 172px 148px; animation: wag 1s ease-in-out infinite; }
+  @keyframes wag{ 0%,100%{ transform:rotate(0deg); } 50%{ transform:rotate(-22deg); } }
+  .blink{ animation: blink 4.2s infinite; transform-origin:center; }
+  @keyframes blink{ 0%,96%,100%{ transform:scaleY(1); } 98%{ transform:scaleY(0.1); } }
+  .float-dog{ animation: floaty 3.4s ease-in-out infinite; }
+  @keyframes floaty{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
+
+  .bubble{
+    position:relative;
+    background:var(--panel);
+    border:var(--line) solid var(--ink);
+    border-radius:20px;
+    padding:14px 22px;
+    max-width:300px;
+    font-family:'Kalam', cursive;
+    font-size:1.1rem;
+    box-shadow:5px 5px 0 var(--ink);
+    margin-bottom:38px;
+  }
+  .bubble::after{
+    content:""; position:absolute; left:50%; bottom:-16px; transform:translateX(-50%);
+    border-width:16px 10px 0 10px; border-style:solid; border-color:var(--ink) transparent transparent transparent;
+  }
+  .bubble::before{
+    content:""; position:absolute; left:50%; bottom:-11px; transform:translateX(-50%);
+    border-width:13px 8px 0 8px; border-style:solid; border-color:var(--panel) transparent transparent transparent; z-index:1;
+  }
+
+  .scroll-cue{ font-size:0.9rem; opacity:0.55; animation:bob 1.8s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(8px); } }
+
+  /* ---------- photo section ---------- */
+  .photo-section{
+    position:relative;
+    z-index:1;
+    max-width:760px;
+    margin:0 auto;
+    padding:2vh 6vw 8vh;
+    text-align:center;
+  }
+  .photo-section h2{ font-size:clamp(1.6rem, 3.6vw, 2.2rem); margin-bottom:34px; }
+
+  .polaroid{
+    display:inline-block;
+    background:var(--panel);
+    border:var(--line) solid var(--ink);
+    border-radius:6px;
+    padding:16px 16px 50px;
+    transform:rotate(-2deg);
+    box-shadow:8px 10px 0 rgba(43,38,32,0.14);
+    position:relative;
+  }
+  .photo-frame{
+    width:min(80vw, 380px);
+    height:min(80vw, 380px);
+    background:var(--paper2);
+    border:2px dashed rgba(43,38,32,0.35);
+    border-radius:4px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    cursor:pointer;
+    position:relative;
+  }
+  .photo-frame img{ width:100%; height:100%; object-fit:cover; display:none; }
+  .photo-frame.has-img img{ display:block; }
+  .photo-frame.has-img .placeholder{ display:none; }
+  .placeholder{ font-size:0.9rem; opacity:0.55; padding:20px; text-align:center; }
+  .placeholder span{ display:block; font-size:2rem; margin-bottom:8px; }
+  .polaroid .caption{
+    position:absolute;
+    bottom:14px;
+    left:0; right:0;
+    text-align:center;
+    font-family:'Kalam', cursive;
+    font-size:1.05rem;
+  }
+
+  /* ---------- comic strip section ---------- */
+  .strip{ position:relative; z-index:1; max-width:1020px; margin:0 auto; padding:2vh 6vw 10vh; }
+  .strip h2{ text-align:center; font-size:clamp(1.8rem, 4vw, 2.5rem); margin-bottom:8px; }
+  .strip .lede{ text-align:center; max-width:44ch; margin:0 auto 48px; opacity:0.75; }
+
+  .panels{ display:grid; grid-template-columns:repeat(3, 1fr); gap:28px; }
+  @media (max-width:760px){ .panels{ grid-template-columns:1fr; } }
+
+  .panel{
+    background:var(--panel);
+    border:var(--line) solid var(--ink);
+    border-radius:12px;
+    padding:28px 22px 22px;
+    position:relative;
+    box-shadow:6px 6px 0 var(--ink);
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .panel:nth-child(1){ transform:rotate(-1.4deg); }
+  .panel:nth-child(2){ transform:rotate(1.1deg); }
+  .panel:nth-child(3){ transform:rotate(-0.8deg); }
+  .panel:hover{ transform:translateY(-6px) rotate(0deg); box-shadow:10px 10px 0 var(--ink); }
+
+  .panel .num{
+    position:absolute; top:-15px; left:18px;
+    background:var(--cherry); color:var(--paper);
+    border:var(--line) solid var(--ink); border-radius:50%;
+    width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+    font-family:'Kalam', cursive; font-weight:700;
+  }
+  .panel .icon{ font-size:2rem; margin-bottom:10px; display:block; }
+  .panel h3{ font-family:'Kalam', cursive; margin:0 0 8px; font-size:1.25rem; }
+  .panel p{ margin:0; font-size:0.95rem; opacity:0.8; line-height:1.55; }
+
+  /* ---------- note section ---------- */
+  .note{ position:relative; z-index:1; max-width:640px; margin:0 auto 12vh; padding:0 6vw; text-align:center; }
+  .note .card{
+    background:var(--panel);
+    border:var(--line) solid var(--ink);
+    border-radius:18px;
+    padding:48px 36px;
+    box-shadow:8px 8px 0 var(--cherry);
+  }
+  .note h2{ font-size:1.9rem; margin-top:0; }
+  .note p{ line-height:1.75; font-size:1.08rem; white-space:pre-wrap; }
+  .note .signoff{ margin-top:26px; font-family:'Kalam', cursive; font-size:1.3rem; color:var(--cherry); }
+
+  footer{ text-align:center; font-size:0.85rem; opacity:0.5; padding:0 6vw 6vh; position:relative; z-index:1; }
+</style>
+</head>
+<body>
+
+<div class="floaters" id="floaters"></div>
+
+<button class="customize-btn" id="openEditor">✎ customize</button>
+
+<div class="editor" id="editor">
+  <div class="editor-card">
+    <h3>make it yours</h3>
+    <p class="hint">edit the text and photo below — it updates the page instantly.</p>
+
+    <label for="in-bubble">speech bubble</label>
+    <input type="text" id="in-bubble" maxlength="70">
+
+    <label for="in-headline">headline</label>
+    <textarea id="in-headline" maxlength="140"></textarea>
+
+    <label for="in-sub">subheading</label>
+    <textarea id="in-sub" maxlength="160"></textarea>
+
+    <label for="in-caption">photo caption</label>
+    <input type="text" id="in-caption" maxlength="40">
+
+    <label>your photo</label>
+    <label class="file-btn" for="in-photo">choose photo</label>
+    <input type="file" id="in-photo" accept="image/*" style="display:none;">
+
+    <label for="in-note">closing note</label>
+    <textarea id="in-note" maxlength="600" style="min-height:120px;"></textarea>
+
+    <label for="in-signoff">sign-off</label>
+    <input type="text" id="in-signoff" maxlength="40">
+
+    <div class="editor-actions">
+      <button class="btn-close" id="closeEditor">close</button>
+      <button class="btn-save" id="saveEditor">save changes</button>
+    </div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="eyebrow hand">a small site, for a big feeling</div>
+
+  <div class="dog-wrap float-dog">
+    <svg viewBox="0 0 220 220" fill="none">
+      <path d="M58 68 C 26 78, 16 132, 44 162 C 55 168, 66 152, 62 130 Z" fill="#2B2620"/>
+      <path d="M162 68 C 194 78, 204 132, 176 162 C 165 168, 154 152, 158 130 Z" fill="#2B2620"/>
+      <g class="tail">
+        <path d="M170 150 C 204 138, 210 96, 188 86 C 204 108, 192 140, 170 150Z" fill="#FFFDF8" stroke="#2B2620" stroke-width="4"/>
+      </g>
+      <ellipse cx="110" cy="142" rx="57" ry="43" fill="#FFFDF8" stroke="#2B2620" stroke-width="4"/>
+      <circle cx="110" cy="94" r="53" fill="#FFFDF8" stroke="#2B2620" stroke-width="4"/>
+      <ellipse cx="110" cy="112" rx="25" ry="17" fill="#FFFDF8" stroke="#2B2620" stroke-width="4"/>
+      <ellipse cx="110" cy="103" rx="7" ry="5" fill="#2B2620"/>
+      <g class="blink">
+        <circle cx="93" cy="87" r="4.2" fill="#2B2620"/>
+        <circle cx="127" cy="87" r="4.2" fill="#2B2620"/>
+      </g>
+      <circle cx="79" cy="101" r="7.5" fill="#F5A9BC" opacity="0.65"/>
+      <circle cx="141" cy="101" r="7.5" fill="#F5A9BC" opacity="0.65"/>
+      <path d="M110 130 c -6 -8 -18 -3 -14 6 c 3 7 14 12 14 12 s 11 -5 14 -12 c 4 -9 -8 -14 -14 -6Z" fill="#E1553A"/>
+    </svg>
+  </div>
+
+  <div class="bubble hand" id="view-bubble">hi. i made you a website because you deserve one.</div>
+
+  <h1 id="view-headline">for the person who makes ordinary days feel <span class="cherry">funny-shaped and warm.</span></h1>
+  <p class="sub" id="view-sub">no big occasion. just a little corner of the internet built entirely out of thinking about you.</p>
+
+  <div class="scroll-cue hand">↓ keep going ↓</div>
+</section>
+
+<section class="photo-section">
+  <h2 class="serif">"this one's my favorite"</h2>
+  <div class="polaroid">
+    <div class="photo-frame" id="photoFrame">
+      <div class="placeholder"><span>📷</span>tap "customize" above<br>to add a real photo of us</div>
+      <img id="photoImg" alt="a photo of us">
+    </div>
+    <div class="caption hand" id="view-caption">us, probably laughing about nothing</div>
+  </div>
+</section>
+
+<section class="strip">
+  <h2>a very scientific list</h2>
+  <p class="lede">three things that are, as far as I can tell, objectively true.</p>
+
+  <div class="panels">
+    <div class="panel">
+      <div class="num">1</div>
+      <span class="icon">☕</span>
+      <h3>you make mornings better</h3>
+      <p>even the slow, groggy, can't-find-my-keys ones. especially those, actually.</p>
+    </div>
+    <div class="panel">
+      <div class="num">2</div>
+      <span class="icon">😂</span>
+      <h3>your laugh is a whole mood</h3>
+      <p>it's loud, it's unfiltered, and it is scientifically proven (by me, just now) to fix bad days.</p>
+    </div>
+    <div class="panel">
+      <div class="num">3</div>
+      <span class="icon">🫶</span>
+      <h3>you're just... my favorite</h3>
+      <p>of all the people, in all the places, you're the one I want to tell things to first.</p>
+    </div>
+  </div>
+</section>
+
+<section class="note">
+  <div class="card">
+    <h2 class="hand">a small note</h2>
+    <p id="view-note">This isn't much — just some code and a doodle dog — but I wanted to make you something with my own hands instead of buying it off a shelf. Consider this your official, notarized proof that you are loved, on this exact day, and every other one too.</p>
+    <p class="signoff" id="view-signoff">— yours, always</p>
+  </div>
+</section>
+
+<footer>made with care (and a little bit of css) just for you.</footer>
+
+<script>
+  // floating hearts
+  const floaters = document.getElementById('floaters');
+  const symbols = ['♥','♥','✦','♥'];
+  for(let i=0;i<20;i++){
+    const s = document.createElement('span');
+    s.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+    s.style.left = Math.random()*100 + 'vw';
+    s.style.fontSize = (0.9 + Math.random()*1.3) + 'rem';
+    s.style.color = Math.random() > 0.5 ? '#E1553A' : '#F5A9BC';
+    s.style.animationDuration = (10 + Math.random()*14) + 's';
+    s.style.animationDelay = (Math.random()*14) + 's';
+    floaters.appendChild(s);
+  }
+
+  // ---- editor logic (in-memory only, no storage APIs) ----
+  const editor = document.getElementById('editor');
+  const openBtn = document.getElementById('openEditor');
+  const closeBtn = document.getElementById('closeEditor');
+  const saveBtn = document.getElementById('saveEditor');
+
+  const fields = {
+    bubble:   { input: document.getElementById('in-bubble'),   view: document.getElementById('view-bubble') },
+    sub:      { input: document.getElementById('in-sub'),      view: document.getElementById('view-sub') },
+    caption:  { input: document.getElementById('in-caption'),  view: document.getElementById('view-caption') },
+    note:     { input: document.getElementById('in-note'),     view: document.getElementById('view-note') },
+    signoff:  { input: document.getElementById('in-signoff'),  view: document.getElementById('view-signoff') },
+  };
+  const headlineInput = document.getElementById('in-headline');
+  const headlineView = document.getElementById('view-headline');
+
+  function prefillEditor(){
+    fields.bubble.input.value = fields.bubble.view.textContent.trim();
+    fields.sub.input.value = fields.sub.view.textContent.trim();
+    fields.caption.input.value = fields.caption.view.textContent.trim();
+    fields.note.input.value = fields.note.view.textContent.trim();
+    fields.signoff.input.value = fields.signoff.view.textContent.trim();
+    headlineInput.value = headlineView.textContent.trim();
+  }
+
+  openBtn.addEventListener('click', () => { prefillEditor(); editor.classList.add('open'); });
+  closeBtn.addEventListener('click', () => editor.classList.remove('open'));
+  editor.addEventListener('click', (e) => { if(e.target === editor) editor.classList.remove('open'); });
+
+  saveBtn.addEventListener('click', () => {
+    fields.bubble.view.textContent = fields.bubble.input.value || fields.bubble.view.textContent;
+    fields.sub.view.textContent = fields.sub.input.value || fields.sub.view.textContent;
+    fields.caption.view.textContent = fields.caption.input.value || fields.caption.view.textContent;
+    fields.note.view.textContent = fields.note.input.value || fields.note.view.textContent;
+    fields.signoff.view.textContent = fields.signoff.input.value || fields.signoff.view.textContent;
+    if(headlineInput.value.trim()){ headlineView.textContent = headlineInput.value; }
+    editor.classList.remove('open');
+  });
+
+  // photo upload
+  const photoInput = document.getElementById('in-photo');
+  const photoFrame = document.getElementById('photoFrame');
+  const photoImg = document.getElementById('photoImg');
+
+  photoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      photoImg.src = ev.target.result;
+      photoFrame.classList.add('has-img');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  photoFrame.addEventListener('click', () => photoInput.click());
+</script>
+
+</body>
+</html>
